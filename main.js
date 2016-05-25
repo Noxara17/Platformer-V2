@@ -30,7 +30,8 @@ var SCREEN_HEIGHT = canvas.height;
 var fps = 0;
 var fpsCount = 0;
 var fpsTime = 0;
-
+var score = 0;
+var lives = 3;
 var keyboard = new Keyboard();
 var LAYER_COUNT = level1.layers.length;
 var MAP = {tw:level1.width, th: level1.height};
@@ -42,6 +43,8 @@ var TILESET_COUNT_X = level1.tilesets[0].columns;
 var TILESET_COUNT_Y = level1.tilesets[0].tilecount / TILESET_COUNT_X;
 var tileset = document.createElement("img");
 tileset.src = level1.tilesets[0].image;
+var bloodredbar = document.createElement("img");
+bloodredbar.src = bloodredbar.png;
 var cells = []; 
 var LAYER_BACKGOUND = 2;
 var LAYER_PLATFORMS = 0;
@@ -144,6 +147,16 @@ function run()
 {
 	context.fillStyle = "#ccc";		
 	context.fillRect(0, 0, canvas.width, canvas.height);
+	// score
+	context.fillStyle = "orange";
+	context.font="32px Arial";
+	var scoreText = "Score: " + score;
+	context.fillText(scoreText, SCREEN_WIDTH - 170, 35);
+	//life counter
+	for(var i =0; i<lives; i++)
+	{
+		context.drawImage(bloodredbar, 20 + ((bloodredbar.width+2)*i), 10);
+	}
 	drawMap();
 	var deltaTime = getDeltaTime();
 	player.update(deltaTime);
