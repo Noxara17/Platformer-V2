@@ -44,7 +44,7 @@ var TILESET_COUNT_Y = level1.tilesets[0].tilecount / TILESET_COUNT_X;
 var tileset = document.createElement("img");
 tileset.src = level1.tilesets[0].image;
 var bloodredbar = document.createElement("img");
-bloodredbar.src = bloodredbar.png;
+bloodredbar.src = "bloodredbar.png";
 var cells = []; 
 var LAYER_BACKGOUND = 2;
 var LAYER_PLATFORMS = 0;
@@ -58,6 +58,9 @@ var FRICTION = MAXDX * 6;
 var JUMP = METER * 1500;
 var vector2 = new Vector2();
 var player = new Player();
+var musicBackground;
+var sfxFire;
+
 function cellAtPixelCoord(layer, x,y)
 {
 if(x<0 || x>SCREEN_WIDTH) // remove ‘|| y<0’
@@ -92,25 +95,44 @@ return value;
 }
 function drawMap()
 {
-for(var layerIdx=0; layerIdx<LAYER_COUNT; layerIdx++)
+var maxTiles = Math.floor(SCREEN_WIDTH / TILE) +2;
+var tileX = pixelToTile(player.position.x);
+var offsetX = TILE + Math.floor(player.position.x%TILE);
+startX = tileX - Math.floor(maxTiles / 2);
+if(startX < -1)
 {
-var idx = 0;
-for( var y = 0; y < level1.layers[layerIdx].height; y++ )
-{
-for( var x = 0; x < level1.layers[layerIdx].width; x++ )
-{
-if( level1.layers[layerIdx].data[idx] != 0 )
-{
-// the tiles in the Tiled map are base 1 (meaning a value of 0 means no tile), so subtract one from the tileset id to get the
-// correct tile
-var tileIndex = level1.layers[layerIdx].data[idx] - 1;
-var sx = TILESET_PADDING + (tileIndex % TILESET_COUNT_X) * (TILESET_TILE + TILESET_SPACING);
-var sy = TILESET_PADDING + (Math.floor(tileIndex / TILESET_COUNT_Y)) * (TILESET_TILE + TILESET_SPACING);
-context.drawImage(tileset, sx, sy, TILESET_TILE, TILESET_TILE, x*TILE, (y-1)*TILE, TILESET_TILE, TILESET_TILE);
+	startX = 0;
+	offsetX = 0;
 }
-idx++;
+if(startX > MAP.tw - maxTiles)
+{
+	startX = MAP.tw - maxTiles + 1;
+	offsetX = TILE;
 }
+worldOffsetX = startX * TILE + offsetX;
+for( var layerIdx=0; layerIdx < LAYER_COUNT; layerIdx++ )
+{
+ for( var y = 0; y < level1.layers[layerIdx].height; y++ )
+ {
+var idx = y * level1.layers[layerIdx].width + startX;
+for( var x = startX; x < startX + maxTiles; x++ )
+{
+ if( level1.layers[layerIdx].data[idx] != 0 )
+ {
+ // the tiles in the Tiled map are base 1 (meaning a value of 0 means no tile),
+ // so subtract one from the tileset id to get the
+ // correct tile
+ var tileIndex = level1.layers[layerIdx].data[idx] - 1;
+ var sx = TILESET_PADDING + (tileIndex % TILESET_COUNT_X) *
+(TILESET_TILE + TILESET_SPACING);
+ var sy = TILESET_PADDING + (Math.floor(tileIndex / TILESET_COUNT_Y)) *
+(TILESET_TILE + TILESET_SPACING);
+ context.drawImage(tileset, sx, sy, TILESET_TILE, TILESET_TILE,
+(x-startX)*TILE - offsetX, (y-1)*TILE, TILESET_TILE, TILESET_TILE);
+ }
+ idx++;
 }
+ }
 }
 }
 function initialize() 
@@ -138,11 +160,27 @@ function initialize()
 	cells[layerIdx][y][x] = 0; // if we haven't set this cell's value, then set it to 0 now
 	}
 idx++;
+musicBackground = new Howl(
+{
+urls: ["background.ogg"],
+loop: true,
+buffer: true,
+volume: 0.5
+} );
+musicBackground.play();
+sfxFire = new Howl(
+{
+urls: ["fireEffect.ogg"],
+buffer: true,
+volume: 1,
+onend: function() {
+isSfxPlaying = false;
+}
+});
 }
 }
 }
 }
-
 function run()
 {
 	context.fillStyle = "#ccc";		
@@ -157,9 +195,9 @@ function run()
 	{
 		context.drawImage(bloodredbar, 20 + ((bloodredbar.width+2)*i), 10);
 	}
-	drawMap();
 	var deltaTime = getDeltaTime();
 	player.update(deltaTime);
+	drawMap();
 	player.draw();
 	// update the frame counter 
 	fpsTime += deltaTime;

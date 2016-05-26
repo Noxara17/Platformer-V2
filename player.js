@@ -32,6 +32,7 @@ this.height = 163
 this.velocity = new Vector2();
 this.falling = true;
 this.jumping = false;
+this.cooldownTimer=0;
 };
 Player.prototype.update = function(deltaTime)
 {
@@ -69,7 +70,7 @@ else
 }
 }
 }
-if(keyboard.isKeyDown(keyboard.KEY_SPACE) == true)
+if(keyboard.isKeyDown(keyboard.KEY_UP) == true)
 {
 jump = true;
 if(left == true) {
@@ -78,6 +79,15 @@ this.sprite.setAnimation(ANIM_JUMP_LEFT);
 if(right == true) {
 this.sprite.setAnimation(ANIM_JUMP_RIGHT);
 }
+}
+if(this.cooldownTimer > 0)
+{
+this.cooldownTimer -= deltaTime;
+}
+if(keyboard.isKeyDown(keyboard.KEY_SPACE) == true && this.cooldownTimer <= 0) {
+sfxFire.play();
+this.cooldownTimer = 0.3;
+// Shoot a bullet
 }
  var wasleft = this.velocity.x < 0;
  var wasright = this.velocity.x > 0;
@@ -167,9 +177,9 @@ this.velocity.x = 0; // stop horizontal velocity
 }
 }
 }
-
 Player.prototype.draw = function()
 {
-this.sprite.draw(context, this.position.x, this.position.y);
-
+this.sprite.draw(context,
+this.position.x - worldOffsetX,
+this.position.y);
 }
