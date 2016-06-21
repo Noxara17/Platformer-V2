@@ -160,6 +160,7 @@ function initialize()
 	cells[layerIdx][y][x] = 0; // if we haven't set this cell's value, then set it to 0 now
 	}
 idx++;
+}
 musicBackground = new Howl(
 {
 urls: ["background.ogg"],
@@ -177,7 +178,6 @@ onend: function() {
 isSfxPlaying = false;
 }
 });
-}
 }
 }
 }
